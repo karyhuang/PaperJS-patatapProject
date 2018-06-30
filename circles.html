@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Circles with Sound</title>
+
+  <link rel="stylesheet" type="text/css" href="circleStyle.css">
+
+  <!-- use howler js CDN -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.5/howler.core.min.js"></script>
+
+  <!-- JS file that stores the keyData object, which stores colors and sounds of all the keys -->
+  <script type="text/javascript" src="keyData.js"></script>
+
+  <!-- download newest version from paper.js and include the JS file from dist -->
+  <!-- if console does not show error, means successfully connected -->
+  <script type="text/javascript" src="paper-full.js"></script>
+  <!-- create a paperscript script and point to the canvas we're using-->
+  <script type="text/paperscript" canvas="myCanvas">
+    
+    // create an empty array to store new circles made every time we press a key
+
+    var circles = [];
+
+
+    // when a key is pressed, make a new circle 
+    
+    function onKeyDown(event) {
+
+
+      // only if the key pressed exists in the keyData object we created, do the following
+      // otherwise, do nothing
+
+      if (keyData[event.key]) {
+
+
+        // check out paper.js Reference, use view.size.width or .height to find the visible area of the project, aka size of the screen, which will be diff every time we resize the screen 
+        // use paper.js built-in method to find max coordinates
+        
+        var maxPoint = new Point(view.size.width, view.size.height);
+
+
+        // Point.random() is like Math.random(), it generates a random point with coordinates between 0 and 1 non inclusive
+        // Point.random() == new Point(Math.random(), Math.random())
+
+        var randomPoint = Point.random();
+
+
+        // multiply maxPoint with randomPoint to get a random point that exists within the viewable canvas
+
+        var point = maxPoint * randomPoint;
+
+
+        // generate new random points with radius 10 and push into circles array
+        // assign the color of that key to the circle
+
+        var newCircle = new Path.Circle(point, 500);
+        circles.push(newCircle);
+        newCircle.fillColor = keyData[event.key].color;
+        
+
+        // play the howler of that key
+        keyData[event.key].sound.play();
+      }
+    }
+
+
+    // in each frame of animation, add 1 to its hue and scale down by 0.9 until it becomes nothing
+    // repeat this for every circle in the circles array
+
+    function onFrame(event) {
+      for (var i = 0; i < circles.length; i++) {
+        circles[i].fillColor.hue += 1;
+        circles[i].scale(0.9);
+
+        // if the area of the circle is less than 1, remove it from the screen and the array
+
+        if(circles[i].area < 1){
+
+          // .remove() is a paperJS function that removes the item from the screen/canvas
+          circles[i].remove();
+
+          circles.splice(i, 1);
+          i--;
+
+          // use console.log to visualize what's happening
+          console.log(circles);
+        }
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- <canvas> is an html5 element that acts as a place to do animations and graphics, can be used to draw graphics via scripting in JavaScript  -->
+  <!-- without JS, it doesn’t do anything -->
+  <canvas id="myCanvas" resize></canvas>
+</body>
+</html>
